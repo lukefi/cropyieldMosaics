@@ -120,10 +120,14 @@ def extractarray(shpfile, datadir, outputdir, savePopulations=False):
         #print('Sentinel file: ' + filename.split('/')[-1])
         filename_parts = filename.replace(".tif", "").split('_')
         
-        date = "".join(filename_parts[2:3])        
-        year = int("".join(list(date)[:4]))        
-        feature = "".join(filename_parts[1:2])
-        
+        #date = "".join(filename_parts[2:3])        
+        #year = int("".join(list(date)[:4]))        
+        #feature = "".join(filename_parts[1:2])
+        # PUHTI:
+        date0 = "".join(filename_parts[4:5])        
+        year = int("".join(list(date0)[:4])) 
+        date = "".join(list(date0)[4:])
+        feature = "".join(filename_parts[3:4])
 
         if year == int(vuosi) and feature in ['ndmi', 'ndti', 'ndvi']:
             print('\nProcessing Sentinel file: ' + filename.split('/')[-1])
