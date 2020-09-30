@@ -84,7 +84,8 @@ RUN:
 runClassifier.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
 -t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30
 
-# Use -m to use also meteorological features:
+Argument -m to use also meteorological features:
+
 runClassifier.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
 -t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30 -n -m
 
