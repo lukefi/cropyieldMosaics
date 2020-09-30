@@ -16,11 +16,13 @@ OUTPUT:
 train set range files + plots of distributions
 histograms per parcel, .pkl
 
-- ensin vivulla --extractIntensities saadaan intensiteettitiedostot, jokaiselta vuodelta
-- sitten vielä aja lopuksi vivulla --calculatePopulations, saadaan koko train populaation jakauma
-- kaiken tämän jälkeen aja vivulla --make_histograms, joka tekee histogrammit per parcel
+- ensin vivulla --extractIntensities saadaan intensiteettitiedostot, jokaiselta vuodelta ('fullArrayIntensities' + vuosi + '.pkl')
+	- tallentaa myöskaikkien pikselien arvot ( populationNDMIIntensities*.pkl)
+- sitten vielä aja lopuksi vivulla --calculatePopulations, saadaan koko train populaation jakaum('populationStats.pkl')
+	- ja kuvia 
+- kaiken tämän jälkeen aja vivulla --make_histograms, joka tekee histogrammit per par (histograms.pkl)
 
-- testaa ensin, sitten rakenna calcHistogram 2D ja 3D vielä.
+Next, run makeAR.py (2D or 3D).	
 
 RUN:
 
@@ -28,6 +30,12 @@ python makeS2IndexHisto.py -s /Users/myliheik/Documents/GISdata/sentinel2/fromPT
     -a /Users/myliheik/Documents/GISdata/satotutkimus/shpfiles/satotilat-2019-train1110.shp \
     -o /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/ \
     --extractIntensities --calculatePopulations --make_histograms
+
+PUHTI:
+python makeS2IndexHisto.py -s /appl/data/geo/sentinel/s2/ \
+    -a /scratch/project_2001253/cropyieldMosaics/shpfiles/satotilat-2019-train1110.shp \
+    -o /scratch/project_2001253/cropyieldMosaics \
+    --extractIntensities
 
 """
 import argparse
@@ -131,9 +139,9 @@ def extractarray(shpfile, datadir, outputdir, savePopulations=False):
 
         if year == int(vuosi) and feature in ['ndmi', 'ndti', 'ndvi']:
             print('\nProcessing Sentinel file: ' + filename.split('/')[-1])
-            print('Feature: ' + "".join(filename_parts[1:2]))
-            print('Mosaic year: ' + "".join(list(date)[:4]))
-            print('Mosaic starting date: ' + "".join(filename_parts[2:3]))
+            print('Feature: ' + "".join(filename_parts[3:4]))
+            print('Mosaic year: ' + "".join(list(date0)[:4]))
+            print('Mosaic starting date: ' + "".join(filename_parts[4:5]))
             
             # Read all pixels within a parcel:
             parcels = zonal_stats(shpfile, filename, stats="count", geojson_out=True, all_touched = False, 
