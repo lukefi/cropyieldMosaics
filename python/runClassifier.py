@@ -40,10 +40,11 @@ def classify(trainfile: str, testfile: str, predfile: str, learner: str, importa
     y_train = train['y']
     X_test = test.drop(['y', 'farmID'], axis = 1)
     y_test = test['y']
+    print(f"Shape of training set: {X_train.shape}")
     
     if learner == 'rf':
         
-        rf = RandomForestRegressor(n_estimators=200, random_state=42, max_features = 'sqrt')
+        rf = RandomForestRegressor(n_estimators=500, random_state=42, max_features = 'sqrt')
         rf.fit(X_train, y_train)
         y_pred = rf.predict(X_test)
         if savePred:  
