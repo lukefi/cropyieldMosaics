@@ -3,6 +3,9 @@
 
 """
 2020-09-16 MY
+2020-10-07 added 3D
+2020-10-08 added ELY to test set predictions. Needed for regional forecasts!
+
 env: ihan sama, pandas
 
 RUN:
@@ -10,7 +13,7 @@ RUN:
 Reshape histograms into 2D analysis ready format:
 python makeARD.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1120 -l
 
-Reshape histograms into 3D analysis ready format:
+Reshape histograms into 3D analysis ready format and make target y as well:
 python makeARD.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1120 -m
 
 Merge ARD with target values, 2D only:
@@ -38,6 +41,11 @@ import textwrap
 def save_intensities(filename, arrayvalues):
     with open(filename, 'wb+') as outputfile:
         pickle.dump(arrayvalues, outputfile)
+
+def load_intensities(filename):
+    with open(filename, "rb") as f:
+        data = pickle.load(f)
+    return data
 
 def make2D(in_dir_path):
     
@@ -85,6 +93,58 @@ def make2D(in_dir_path):
     save_intensities(os.path.join(in_dir_path, 'ard.pkl'), all_dfs)
 
     return all_dfs
+
+def merge3DTarget(data, targetdir, in_dir_path):    
+    # Read in target y and merge with 3D data by farmID:        
+    setti = in_dir_path.split('/')[-1]
+    targetsetti = setti.split('1')[0] + 'y' + setti[-4:]
+    targetfilebase = os.path.join(targetdir, targetsetti)
+    
+    df = pd.concat(map(pd.read_csv, glob.glob(targetfilebase + '*.csv')), sort=False)
+
+    dfnew = df[['farmID', df.columns[df.columns.str.endswith('ha')][0]]]
+    dfnew.columns = ['farmID', 'y']
+    data2 = data.merge(dfnew, how = 'left', on = 'farmID')[['farmID', 'y']].drop_duplicates()
+    print(f"Shape of y: {data2['y'].to_numpy().shape}")
+    print('Saving y into y3D.pkl...')
+    save_intensities(os.path.join(in_dir_path, 'y3DfarmID.pkl'), data2['farmID'])
+    save_intensities(os.path.join(in_dir_path, 'y3D.pkl'), data2['y'].to_numpy())
+    
+    
+def make3D(inputdir, targetdir):
+    histofile = os.path.join(inputdir, 'histograms.pkl')
+    with open(histofile, "rb") as f:
+        tmp = pickle.load(f)
+    print(f"Length of histogram file: {len(tmp)}")
+    
+    # to pandas:
+    all_files_df = pd.DataFrame(tmp)
+    
+    print(f"Length of dataframe: {len(all_files_df)}")
+    
+    old_names = all_files_df.columns.tolist()  
+    new_names = ['farmID','date', 'feature', 'bin1', 'bin2', 'bin3', 'bin4', 'bin5', 
+             'bin6', 'bin7', 'bin8', 'bin9', 'bin10', 'bin11', 'bin12', 'bin13', 'bin14', 'bin15', 'bin16'] 
+    all_files_df = all_files_df.rename(columns=dict(zip(old_names, new_names))) 
+    
+    dfpivot = all_files_df.pivot(index=['farmID', 'date'], columns='feature', values=['bin1', 'bin2', 'bin3', 'bin4', 'bin5', 
+             'bin6', 'bin7', 'bin8', 'bin9', 'bin10', 'bin11', 'bin12', 'bin13', 'bin14', 'bin15', 'bin16'])
+    dfpivot.columns = ['_'.join(col).strip() for col in dfpivot.columns.values]
+    
+    print(f"Any missing dates: {(dfpivot.reset_index().groupby('farmID')['date'].nunique() != 13).any()}")
+    
+    merge3DTarget(dfpivot, targetdir, inputdir)
+    
+    x_data = dfpivot.to_numpy()
+    x_array = x_data.reshape(int(x_data.shape[0]/13),13,48)
+    
+    print(f"Shape of X in 2D: {x_data.shape}")
+    print(f"Shape of X in 3D: {x_array.shape}")
+    
+    print(f"Saving X into ard3D.pkl...")
+    save_intensities(os.path.join(inputdir, 'ard3D.pkl'), x_array)
+
+
 
 def mergeTarget(targetdir, in_dir_path):
     
@@ -149,7 +209,9 @@ def main(args):
            
         
         if args.make_3D:
-            print(f'\n\n 3D under construction.')
+            print(f'\n\nBuilding ARD in 3D for neural networks...')
+            make3D(in_dir_path, target_dir_path)
+            
             
         if args.mergeTarget:
             print(f'\n\nMerge with target, for 2D only.')

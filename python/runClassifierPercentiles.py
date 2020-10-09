@@ -1,17 +1,17 @@
 """
-2020-09-22
+2020-10-02
 
 RUN:
 
-runClassifier.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
+runClassifierPercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
 -t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30
 
 # Use -n to save predictions:
-runClassifier.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
+runClassifierPercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
 -t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30 -n
 
 # Use -m to use also meteorological features:
-runClassifier.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
+runClassifierPercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
 -t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30 -n -m
 
 
@@ -53,6 +53,7 @@ def classify(trainfile: str, testfile: str, predfile: str, learner: str, importa
         rf.fit(X_train, y_train)
         y_pred = rf.predict(X_test)
         if savePred:  
+            
             # merge with KUNTA or ELY data:
             # check the path to dictionary for regional codes:
             dictionary = load_intensities('/Users/myliheik/Documents/myCROPYIELD/data/farmID-elyt-Dict.pkl')
@@ -65,6 +66,7 @@ def classify(trainfile: str, testfile: str, predfile: str, learner: str, importa
             print(f'Saving predictions on test set into {predfile}...\n')
             with open(predfile, 'wb+') as outputfile:
                 pickle.dump(uusi, outputfile)
+
         
         mse = mean_squared_error(y_test, y_pred)
         print(f"RMSE: {sqrt(mse)}")
@@ -85,20 +87,20 @@ def main(args):
         if not args.train_dir or not args.test_dir :
             raise Exception('Missing train set or test set directory argument. Try --help .')
 
-        print(f'\nrunClassifier.py')
+        print(f'\nrunClassifierPercentiles.py')
         print(f'\nARD train set in: {args.train_dir}')
         print(f'\nARD test set in: {args.test_dir}')
 
 
         if args.use_2Dmeteo:
             print(f'\nUsing ARD + meteorological features, for 2D only.')
-            trainfile = os.path.join(args.train_dir, 'ard2Dmeteo.pkl')
-            testfile = os.path.join(args.test_dir, 'ard2Dmeteo.pkl')
-            predfile = os.path.join(args.test_dir, 'ard2DmeteoPreds.pkl')
+            trainfile = os.path.join(args.train_dir, 'ard2DpercentilesMeteo.pkl')
+            testfile = os.path.join(args.test_dir, 'ard2DpercentilesMeteo.pkl')
+            predfile = os.path.join(args.test_dir, 'ard2DpercentilesMeteoPreds.pkl')
         else:
-            trainfile = os.path.join(args.train_dir, 'ard2D.pkl')
-            testfile = os.path.join(args.test_dir, 'ard2D.pkl')
-            predfile = os.path.join(args.test_dir, 'ard2DPreds.pkl')
+            trainfile = os.path.join(args.train_dir, 'ard2Dpercentiles.pkl')
+            testfile = os.path.join(args.test_dir, 'ard2Dpercentiles.pkl')
+            predfile = os.path.join(args.test_dir, 'ard2DpercentilesPreds.pkl')
 
         classify(trainfile, testfile, predfile, learner = 'rf', important = 30, savePred=args.savePreds)
         
