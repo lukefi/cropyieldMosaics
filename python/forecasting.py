@@ -5,6 +5,7 @@ Printing plots of forecasts from JRC, Satotilasto and EO predictions.
 
 RUN:
 python forecasting.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1320 -y 2018 -n 
+python forecasting.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1320 -y 2018 -n -r -f
 
 # To use meteorological features:
 python forecasting.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1320 -y 2018 -n -m
@@ -30,7 +31,7 @@ def load_intensities(filename):
         data = pickle.load(f)
     return data
 
-def forecast(predfile: str, year: int, saveForecast=False, saveGraph=False, showGraph=True):
+def forecast(predfile: str, year: int, saveForecast=False, saveGraph=False, showGraph=True, doRNN=False, doRNNfull=False):
     # Make forecasts from predictions
 
     basename = predfile.split('/')[-1][:-4]
@@ -47,8 +48,23 @@ def forecast(predfile: str, year: int, saveForecast=False, saveGraph=False, show
     imgfp = Path(os.path.expanduser(imgpath))
     imgfp.mkdir(parents=True, exist_ok=True)
     imgfile = os.path.join(imgfp, img)
-    print(setti)
+    #print(setti)
     
+    if setti == '1110':
+        settix = 'winter wheat'
+    if setti == '1120':
+        settix = 'spring wheat'
+    if setti == '1230':
+        settix = 'rye'
+    if setti == '1310':
+        settix = 'feed barley'
+    if setti == '1320':
+        settix = 'malting barley'
+    if setti == '1400':
+        settix = 'oat'
+
+
+    ##### Satotilasto:
     print('\nReading Luke satotilasto forecasts for crop', setti)
     fp = '/Users/myliheik/Documents/myCROPYIELD/ennusteetJRC/satotilastoLukeEnnusteet.csv'
     df = pd.read_csv(fp, sep=';', skiprows=4)
@@ -57,8 +73,11 @@ def forecast(predfile: str, year: int, saveForecast=False, saveGraph=False, show
     else:
         sato = df[(df['Vuosi'] == year) & (df['Vilja'] == int(setti))].sort_values(by = 'DOY', axis=0)['satoennuste']        
     #print(df[(df['Vuosi'] == year) & (df['Vilja'] == int(setti))])
-    #print(sato)
 
+    sato0 = pd.Series([None])
+    sato1 = sato0.append(sato)
+    
+    ##### Random forest:
     # Read predictions:
     preds = load_intensities(predfile) 
     preds['year'] = preds['farmID'].str.split('_').str[0]
@@ -75,13 +94,12 @@ def forecast(predfile: str, year: int, saveForecast=False, saveGraph=False, show
     predsAugust = load_intensities(predfileAugust) 
     predsAugust['year'] = predsAugust['farmID'].str.split('_').str[0]
     averageAugust = predsAugust[predsAugust['year'] == str(year)].groupby(['ELY']).mean().mean()
+
     
-    sato0 = pd.Series([None])
-    sato1 = sato0.append(sato)
-    
-    d = {'Month': ['June', 'July', 'August','Final'], 'Prediction': [int(averageJune), int(averageJuly), int(averageAugust), int(average)], 'Satotilasto': sato1}
+    d = {'Month': ['June', 'July', 'August','Final'], 'RF': [int(averageJune), int(averageJuly), int(averageAugust), int(average)], 'Satotilasto': sato1}
     output = pd.DataFrame(data=d)
         
+    ####### JRC:    
     print('Reading JRC crop yield forecasts for crop', setti)   
 
     fp = '/Users/myliheik/Documents/myCROPYIELD/ennusteetJRC/JRCMARS4CASTs.txt'
@@ -101,7 +119,57 @@ def forecast(predfile: str, year: int, saveForecast=False, saveGraph=False, show
         #print(sato2)
         sato2[4] = None
         output = output.assign(JRC = sato2.values)
-        
+    
+    ####### LSTM:
+    print('Reading LSTM crop yield predictions for crop', setti) 
+    predfile3D = load_intensities(os.path.join(os.path.dirname(predfile), 'ard3DPreds.pkl'))
+    farmID3D = load_intensities(os.path.join(os.path.dirname(predfile), 'y3DfarmID.pkl'))
+    
+    if predfile3D.shape[0] != farmID3D.shape[0]:
+        print("predfile3D and farmID3D numbers don't match!")
+    
+    predfile3D['year'] = farmID3D.str.split('_').str[0].values
+    predictions = predfile3D[predfile3D['year'] == str(year)].mean(axis = 0)
+    
+    output = output.assign(LSTM = predictions[:-1].values.astype(int))  
+    
+    
+    if doRNN:
+        ####### RNN from histograms: 
+        print('Reading RNN crop yield predictions for crop', setti) 
+        testsetti = 'test' + setti
+        predfile3D = load_intensities(os.path.join(os.path.dirname('/Users/myliheik/Documents/myCROPYIELD/RNNpreds/'), 
+                                                   testsetti, 'RNNPreds.pkl'))
+        fpRNN = 'farmID_test' + setti + '.pkl'
+        farmID3D = load_intensities(os.path.join(os.path.dirname('/Users/myliheik/Documents/myCROPYIELD/dataStack/'),  fpRNN))
+
+        if predfile3D.shape[0] != farmID3D.shape[0]:
+            print("RNN predfile and farmID numbers don't match!")
+
+        predfile3D['year'] = pd.Series(farmID3D).str.split('_').str[0].values
+        predictionsRNN = predfile3D[predfile3D['year'] == str(year)].mean(axis = 0)
+
+        output = output.assign(RNN = predictionsRNN[:-1].values.astype(int))  
+
+    if doRNNfull:
+        print('Reading RNN crop yield predictions from full data model for crop', setti)
+        testsetti = 'test' + setti
+        predfile3D = load_intensities(os.path.join(os.path.dirname('/Users/myliheik/Documents/myCROPYIELD/RNNpreds/'), 
+                                                   testsetti, 'RNNPredsFull.pkl'))
+        fpRNN = 'farmID_test' + setti + '.pkl'
+        farmID3D = load_intensities(os.path.join(os.path.dirname('/Users/myliheik/Documents/myCROPYIELD/dataStack/'),  fpRNN))
+
+        if predfile3D.shape[0] != farmID3D.shape[0]:
+            print("RNN predfile and farmID numbers don't match!")
+
+        predfile3D['year'] = pd.Series(farmID3D).str.split('_').str[0].values
+        predictionsRNNfull = predfile3D[predfile3D['year'] == str(year)].mean(axis = 0)
+
+        output = output.assign(RNNsuper = predictionsRNNfull[:-1].values.astype(int))          
+
+    print("\nNumber of farms in prediction set: ", len(preds[preds['year'] == str(year)]))
+    
+    ###### Finally combining:
     output = output.set_index('Month')
     output.columns.name = 'Method'
     s = output.stack()
@@ -109,7 +177,12 @@ def forecast(predfile: str, year: int, saveForecast=False, saveGraph=False, show
     ss = s.reset_index()
 
 
-    print('\nThe predicted August crop yield for Finland in', year, 'was', int(averageAugust), 'kg/ha for', setti, '.')
+    print('\nThe RF predicted August crop yield for Finland in', year, 'was', int(averageAugust), 'kg/ha for', setti, '.')
+    print('The LSTM predicted August crop yield for Finland in', year, 'was', int(predictions[12]), 'kg/ha for', setti, '.')
+    if doRNN:
+        print('The RNN predicted August crop yield for Finland in', year, 'was', int(predictionsRNN[2:3]), 'kg/ha for', setti, '.')
+    if doRNNfull:
+        print('The RNNsuper predicted August crop yield for Finland in', year, 'was', int(predictionsRNNfull[2:3]), 'kg/ha for', setti, '.')
     if jrcsetti is not None:
         print('The JRC crop yield August forecast for Finland in', year, 'was', int(sato2[2:3]), 'kg/ha for', setti, '.')
     print('The real crop yield for Finland in', year, 'was', int(sato[2:3]), 'kg/ha for', setti, '.')
@@ -124,7 +197,7 @@ def forecast(predfile: str, year: int, saveForecast=False, saveGraph=False, show
     g.despine(left=True)
     g.set_axis_labels("", "Crop yield (kg/ha)")
     g.legend.set_title("")
-    g.set(title = "Crop " + setti + " for year " + str(year))
+    g.set(title = "Crop " + settix + " for year " + str(year))
     g.axes[0][0].axhline(y = int(sato[2:3]), color='red', linewidth=2, alpha=.7)
     if saveGraph:
         print('\nSaving the bar plot into', imgfile)
@@ -158,7 +231,7 @@ def main(args):
         else:
             predfile = os.path.join(args.pred_dir, 'ard2DPreds.pkl')
 
-        forecast(predfile, args.year, saveGraph=True, saveForecast=args.saveForecasts)
+        forecast(predfile, args.year, saveGraph=True, saveForecast=args.saveForecasts, doRNN=args.doRNN, doRNNfull=args.doRNNfull)
         
         
         print(f'\nDone.')
@@ -190,6 +263,14 @@ if __name__ == '__main__':
 
     parser.add_argument('-n', '--saveForecasts',
                         help='Save forecasts into file.',
+                        default=False,
+                        action='store_true')
+    parser.add_argument('-r', '--doRNN',
+                        help='Use also RNN predictions.',
+                        default=False,
+                        action='store_true')
+    parser.add_argument('-f', '--doRNNfull',
+                        help='Use also full data RNN predictions.',
                         default=False,
                         action='store_true')
 

@@ -34,10 +34,13 @@ def drawPlots(pred_dir):
     subprocess.call(settii, shell=True)
     settii = "cat /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/results-RF-" + setti + "* | grep 'Saving' > tmp2.txt"
     subprocess.call(settii, shell=True)
+    settii = "cat /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/results-LSTM-" + setti + ".txt | grep 'RMSE' > tmp3.txt"
+    subprocess.call(settii, shell=True)
     
     
     tmp1 = pd.read_csv("tmp1.txt", sep = ":", header = None)
     tmp2 = pd.read_csv("tmp2.txt", sep = "/", header = None)
+    tmp3 = pd.read_csv("tmp3.txt", sep = ":", header = None)
 
     tmp1['Method'] = tmp2[8].str.split('.').str[0]
     tmp1['Month'] = tmp1['Method'].str.split('Preds').str[1]
@@ -49,6 +52,13 @@ def drawPlots(pred_dir):
         tmp1['kk'] = tmp1['kk'].replace(key, dictionary[key])
     tmp = tmp1.sort_values('kk')
     
+    tmp3['mittari'] = 'RMSE'
+    tmp3['Method'] = 'LSTM'
+    tmp3['Month'] = 'Final'
+    tmp3['kk'] = 4
+    tmp3['RMSE'] = tmp3[1]
+    tmp = tmp.append(tmp3[['mittari', 'RMSE', 'Method', 'Month', 'kk']])
+    
     # Draw a nested barplot 
     g = sns.catplot(
         data=tmp, kind="bar",
@@ -56,6 +66,7 @@ def drawPlots(pred_dir):
         ci="sd", palette="Paired", alpha=.6, height=6
     )
     g.despine(left=True)
+    g.set(ylim=(200, 2000))
     g.set_axis_labels("", "RMSE (kg/ha)")
     g.legend.set_title("")
     g.set(title = "Crop " + setti)
