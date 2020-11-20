@@ -42,6 +42,12 @@ def drawPlots(pred_dir):
     tmp2 = pd.read_csv("tmp2.txt", sep = "/", header = None)
     tmp3 = pd.read_csv("tmp3.txt", sep = ":", header = None)
 
+    temppi = 'RF-' + tmp2[8].str.split('.').str[0].str[5:].str.replace('Preds', '')
+    temppi2 = temppi.str.replace('June', '')
+    temppi2 = temppi2.str.replace('July', '')
+    temppi2 = temppi2.str.replace('August', '')
+    temppi2 = temppi2.str.replace('RF-$', 'RF-histo')
+    temppi2 = temppi2.str.replace('RF-meteo', 'RF-histoMeteo')
     tmp1['Method'] = tmp2[8].str.split('.').str[0]
     tmp1['Month'] = tmp1['Method'].str.split('Preds').str[1]
     tmp1['Month'] = tmp1['Month'].replace('', 'Final')
@@ -50,7 +56,10 @@ def drawPlots(pred_dir):
     tmp1['kk'] = tmp1['Month'].copy()
     for key in dictionary.keys():
         tmp1['kk'] = tmp1['kk'].replace(key, dictionary[key])
+    tmp1['Method'] = temppi2
     tmp = tmp1.sort_values('kk')
+    
+    
     
     tmp3['mittari'] = 'RMSE'
     tmp3['Method'] = 'LSTM'
@@ -63,7 +72,7 @@ def drawPlots(pred_dir):
     g = sns.catplot(
         data=tmp, kind="bar",
         x="Month", y="RMSE", hue="Method",
-        ci="sd", palette="Paired", alpha=.6, height=6
+        ci="sd", palette="Paired", alpha=.8, height=6, aspect=1
     )
     g.despine(left=True)
     g.set(ylim=(200, 2000))

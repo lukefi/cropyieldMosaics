@@ -100,7 +100,7 @@ def merge3DTarget(data, targetdir, in_dir_path):
     targetsetti = setti.split('1')[0] + 'y' + setti[-4:]
     targetfilebase = os.path.join(targetdir, targetsetti)
     
-    df = pd.concat(map(pd.read_csv, glob.glob(targetfilebase + '*.csv')), sort=False)
+    df = pd.concat(map(pd.read_csv, glob.glob(targetfilebase + '-20' + '*.csv')), sort=False)
 
     dfnew = df[['farmID', df.columns[df.columns.str.endswith('ha')][0]]]
     dfnew.columns = ['farmID', 'y']
@@ -157,7 +157,7 @@ def mergeTarget(targetdir, in_dir_path):
     targetsetti = setti.split('1')[0] + 'y' + setti[-4:]
     targetfilebase = os.path.join(targetdir, targetsetti)
     
-    df = pd.concat(map(pd.read_csv, glob.glob(targetfilebase + '*.csv')), sort=False)
+    df = pd.concat(map(pd.read_csv, glob.glob(targetfilebase + '-20' + '*.csv')), sort=False)
 
 
     dfnew = df[['farmID', df.columns[df.columns.str.endswith('ha')][0]]]
