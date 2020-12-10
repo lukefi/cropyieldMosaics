@@ -133,7 +133,7 @@ WHERE
 
 1. argument train_dir (-i) takes the path to the directory where the train set ARD file are stored. The code will guess that the test set is in a directory called testxxxx. Here /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1120
 
-## Percentiles
+### Percentiles
 
 Another approach in feature engineering is to take percentiles and mean of the pixel values instead of histograms. These codes are used to process data into percentiles.
 
@@ -147,9 +147,9 @@ runClassifierPercentilesInSeason.py
 
 
 
-### forecasting
+### Forecasting
 
-Lastly, we can print plots of forecasts from JRC, Satotilasto and EO predictions with 
+Lastly, we can print comparative figures of forecasts from JRC, Satotilasto and EO predictions with 
 
 forecasting.py
 
