@@ -15,23 +15,14 @@ INPUTS:
 - Number of dimensions in ARD data
 
 OUTPUT:
-ARD per parcel, ardPercentiles.pkl
+ARD per parcel, ard2DPercentiles.pkl
 
 - With option  --makeARD (2D or 3D) reshapes the time series into ARD either 2D or 3D.
 - Option --dimensions decides the dimensions in ARD data.
 
 RUN:
 
-Reshape percentiles into 2D analysis ready format:
-python makeARDpercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1120 \
-     --makeARD -n 2
-
-PUHTI:
-
-python makeARDpercentiles.py -i /scratch/project_2001253/cropyieldMosaics/results/test1120 \
-    --makeARD -n 2
-
-Merge ARD with target values, 2D only:
+Reshape percentiles into 2D analysis ready format and merge ARD with target values, 2D only:
 python makeARDpercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1120 \
 -t /Users/myliheik/Documents/myCROPYIELD/data -n 2 -a
 
@@ -131,7 +122,7 @@ def mergeTarget(targetdir, in_dir_path):
     with open(ardfile, "rb") as f:
         data = pickle.load(f)
         
-    setti = in_dir_path.split('/')[-1]
+    setti = str(in_dir_path).split('/')[-1]
     targetsetti = setti.split('1')[0] + 'y' + setti[-4:]
     targetfilebase = os.path.join(targetdir, targetsetti)
     
@@ -147,7 +138,7 @@ def mergeTarget(targetdir, in_dir_path):
 def make2Dmeteo(in_dir_path, meteo_dir):
     ardfile = os.path.join(in_dir_path, 'ard2Dpercentiles.pkl')
     
-    setti = in_dir_path.split('/')[-1]
+    setti = str(in_dir_path).split('/')[-1]
     with open(ardfile, "rb") as f:
         data = pickle.load(f)
     
@@ -172,31 +163,32 @@ def main(args):
         print(f'\n\makeARDpercentiles.py')
         print(f'\nPercentile files in: {args.input_dir}')
       
-        inputdirsetti = pathlib.Path(os.path.expanduser(args.input_dir))
-        targetdir = pathlib.Path(os.path.expanduser(args.target_dir))
-        meteodir = pathlib.Path(os.path.expanduser(args.meteo_dir))
-
-        
+        inputdirsetti = pathlib.Path(os.path.expanduser(args.input_dir))       
         nrdim = args.dimensions
         
-        if nrdim = 3:
+        if nrdim == 3:
             print(f'\nARD in 3D is under construction...')
             
 
             
         if args.makeARD:
-            if nrdim = 2:
+            if nrdim == 2:
                 joinPerc(inputdirsetti)
-                makeARD(inputdirsetti, nrdim)
-                if not targetdir:
-                    print(f'\nCannot merge with target variable. Please, give target directory where target files are stored!')
+                makeARD(inputdirsetti)
+                if not args.target_dir:
+                    print(f'\nCannot merge with target variable. Please, give target directory (-t) where target files are stored!')
                 else:    
+                    targetdir = pathlib.Path(os.path.expanduser(args.target_dir))
                     mergeTarget(targetdir, inputdirsetti)
             else:
                 print(f'\nARD in 3D is under construction...')
                 
         if args.mergeMeteo:
-            make2Dmeteo(inputdirsetti, meteodir)
+            if not args.meteo_dir:
+                print(f'\nCannot merge with meteo data. Please, give meteo directory (-k) where meteo files are stored!')
+            else:    
+                meteodir = pathlib.Path(os.path.expanduser(args.meteo_dir))
+                make2Dmeteo(inputdirsetti, meteodir)
 
         print(f'\nDone.')
 
@@ -211,18 +203,15 @@ if __name__ == '__main__':
                                      epilog=textwrap.dedent(__doc__))
     parser.add_argument('-i', '--input_dir',
                         help='Directory for input pickle files',
-                        type=str,
-                        default='.')
+                        type=str)
     
     parser.add_argument('-t', '--target_dir',
                         help='Directory for target directory.',
-                        type=str,
-                        default='.')
+                        type=str)
     
     parser.add_argument('-k', '--meteo_dir',
                         help='Directory for meteorological directory.',
-                        type=str,
-                        default='.')
+                        type=str)
     
     parser.add_argument('-a', '--makeARD',
                         help="Reshape the time series into ARD.",
