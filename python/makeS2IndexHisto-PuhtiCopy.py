@@ -254,7 +254,7 @@ def decideBinSeq(outputdirsetti):
     
     return ndmirange, ndtirange, ndvirange
 
-def makeHisto(outputdirsetti, bins, vuosi):
+def makeHisto(outputdirsetti, bins):
     print('\nDecide bin sequences for range...')
     ndmirange, ndtirange, ndvirange = decideBinSeq(outputdirsetti)
       
@@ -262,10 +262,7 @@ def makeHisto(outputdirsetti, bins, vuosi):
     nrbins = bins
 
     # Find all population intensities files in resultsdir:
-    if vuosi == '2020':
-        rawfiles = glob.glob(os.path.join(outputdirsetti, 'fullArrayIntensities2020.pkl'))
-    else:
-        rawfiles = glob.glob(os.path.join(outputdirsetti, 'fullArrayIntensities201*.pkl'))
+    rawfiles = glob.glob(os.path.join(outputdirsetti, 'fullArrayIntensities20*.pkl'))
     print('\nCalculate histograms...')
     for filename in rawfiles:
         with open(filename, "rb") as f:
@@ -305,10 +302,7 @@ def makeHisto(outputdirsetti, bins, vuosi):
                 histlist.append(hist2)
 
     print('Saving histograms into histograms.pkl...')
-    if vuosi == '2020':
-        save_intensities(os.path.join(outputdirsetti, 'histograms2020.pkl'), histlist)
-    else:
-        save_intensities(os.path.join(outputdirsetti, 'histograms.pkl'), histlist)
+    save_intensities(os.path.join(outputdirsetti, 'histograms.pkl'), histlist)
 
 
     print('Done.')            
@@ -344,7 +338,7 @@ def main(args):
             calculatePopulations(outputdirsetti, show=False, plotPopulations=True)
             
         if args.make_histograms:
-            histlist = makeHisto(outputdirsetti, nrbins, vuosi)
+            histlist = makeHisto(outputdirsetti, nrbins)
             
         # Convert to RF ARD
         
