@@ -77,7 +77,7 @@ WHERE:
 
 #### runClassifier
 
-Lastly, we fit the data to a classifier, in this case random forest.
+Here we fit the data to a classifier, in this case random forest.
 
 RUN:
 
@@ -100,3 +100,61 @@ WHERE:
 
 The function prints statistics (R2, RMSE, MSE) and list of important features as an output. Test set predictions can be optionally saved into the test_dir.
 
+#### runClassifierInSeason
+
+Here we calculate in-season Random Forest predictions. One for June, July and August, and Final as well. We can also add meteorological features into the model.
+
+RUN:
+
+runClassifierInSeason.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
+-t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30
+
+Use -n to save predictions:
+
+runClassifierInSeason.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
+-t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30 -n
+
+Use -m to use also meteorological features:
+
+runClassifierInSeason.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
+-t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30 -n -m
+
+Parameter -l is used to limit the number of important features listed by Random Forest.
+
+#### runClassifier3D
+
+Here we fit the data to a predictive model, in this case Long Short-Term Memory (LSTM) neural network.
+
+RUN:
+
+python runClassifier3D.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1120
+
+WHERE 
+
+1. argument train_dir (-i) takes the path to the directory where the train set ARD file are stored. The code will guess that the test set is in a directory called testxxxx. Here /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1120
+
+## Percentiles
+
+Another approach in feature engineering is to take percentiles and mean of the pixel values instead of histograms. These codes are used to process data into percentiles.
+
+makeS2IndexPercentiles.py
+
+makeARDpercentiles.py
+
+runClassifierPercentiles.py
+
+runClassifierPercentilesInSeason.py
+
+
+
+### forecasting
+
+Lastly, we can print plots of forecasts from JRC, Satotilasto and EO predictions with 
+
+forecasting.py
+
+### RMSE plots
+
+To see model performance, we can draw RMSE plot with:
+
+combineResults.py
