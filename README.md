@@ -32,7 +32,7 @@ As a reference data, we will have historical crop yields per hectare on farm-lev
 
 Prerequisites: For machine learning classification, the vector data set should be diveded into training and test set. Vector data should be in ESRI shapefile format. Shapefile should include farm ID as variable 'farmID'.
 
-#### makeS2IndexHisto
+#### makeS2IndexHisto.py
 
 First we run Python program makeS2IndexHisto.py. Inputs are 1) a path to a directory where the Sentinel-2 indeces are as 30-day mosaics  (argument --in_s2_tif); 2) a path to the vector data (shapefile, argument --in_aoi_shapefile); 3) a path to directory for saving the results (argument --output_dir).
 
@@ -55,7 +55,7 @@ WHERE:
 
 Arguments should be run in this order.
 
-#### makeARD
+#### makeARD.py
 
 Next, we modify histograms into 2D ARD format which is suitable for machine learner. 
 
@@ -75,7 +75,7 @@ WHERE:
 1. argument make_2Dmeteo (-n) merges ARD and target values with meteorological data.
 
 
-#### runClassifier
+#### runClassifier.py
 
 Here we fit the data to a classifier, in this case random forest.
 
@@ -100,7 +100,7 @@ WHERE:
 
 The function prints statistics (R2, RMSE, MSE) and list of important features as an output. Test set predictions can be optionally saved into the test_dir.
 
-#### runClassifierInSeason
+#### runClassifierInSeason.py
 
 Here we calculate in-season Random Forest predictions. One for June, July and August, and Final as well. We can also add meteorological features into the model.
 
@@ -121,7 +121,7 @@ runClassifierInSeason.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosai
 
 Parameter -l is used to limit the number of important features listed by Random Forest.
 
-#### runClassifier3D
+#### runClassifier3D.py
 
 Here we fit the data to a predictive model, in this case Long Short-Term Memory (LSTM) neural network.
 
@@ -137,13 +137,73 @@ WHERE
 
 Another approach in feature engineering is to take percentiles and mean of the pixel values instead of histograms. These codes are used to process data into percentiles.
 
-makeS2IndexPercentiles.py
+#### makeS2IndexPercentiles.py
 
-makeARDpercentiles.py
+From Sentinel-2 mosaics to percentiles with rasterstats. Indeces 'NDMI', 'NDTI' and 'NDVI'.
 
-runClassifierPercentiles.py
+INPUTS:
+/Users/myliheik/Documents/GISdata/satotutkimus/shpfiles
+/Users/myliheik/Documents/GISdata/sentinel2/fromPTA/AOI2/mosaics/
 
-runClassifierPercentilesInSeason.py
+OUTPUT:
+percentiles per parcel per year per set, .pkl
+
+RUN:
+python makeS2IndexPercentiles.py -s /Users/myliheik/Documents/GISdata/sentinel2/fromPTA/AOI2/mosaics/ \
+    -a /Users/myliheik/Documents/GISdata/satotutkimus/shpfiles/satotilat-2019-train1110.shp \
+    -o /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/ 
+
+#### makeARDpercentiles.py
+
+From Sentinel-2 percentiles to analysis ready data (ARD) with pandas. Indeces 'NDMI', 'NDTI' and 'NDVI'.
+
+INPUTS:
+
+- Input directory (also results are saved here)
+- Target directory (merge with y)
+- Directory for meteorological data
+- Number of dimensions in ARD data
+
+OUTPUT:
+
+ARD per parcel, ard2DPercentiles.pkl
+- With option  --makeARD (2D or 3D) reshapes the time series into ARD either 2D or 3D.
+- Option --dimensions decides the dimensions in ARD data.
+
+RUN:
+
+Reshape percentiles into 2D analysis ready format and merge ARD with target values, 2D only:
+
+python makeARDpercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1120 \
+-t /Users/myliheik/Documents/myCROPYIELD/data -n 2 -a
+
+Merge ARD with meteo features, 2D only:
+
+python makeARDpercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1120 \
+-k /Users/myliheik/Documents/myCROPYIELD/copyof-shpfiles/ -n 2 -m
+
+
+
+#### runClassifierPercentiles.py
+
+runClassifierPercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
+-t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30 -n
+
+Use -m to use also meteorological features:
+
+runClassifierPercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
+-t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30 -n -m
+
+
+#### runClassifierPercentilesInSeason.py
+
+runClassifierPercentilesInSeason.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
+-t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30 -n
+
+Use -m to use also meteorological features:
+
+runClassifierPercentilesInSeason.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
+-t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30 -n -m
 
 
 
