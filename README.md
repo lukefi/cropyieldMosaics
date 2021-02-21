@@ -211,7 +211,13 @@ runClassifierPercentilesInSeason.py -i /Users/myliheik/Documents/myCROPYIELD/cro
 
 Lastly, we can print comparative figures of forecasts from JRC, Satotilasto and EO predictions with 
 
-forecasting.py
+#### forecasting.py
+
+python forecasting.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1320 -y 2018 -n -r -f
+
+To use meteorological features:
+
+python forecasting.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1320 -y 2018 -n -m
 
 ### RMSE plots
 
