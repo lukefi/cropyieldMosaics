@@ -186,6 +186,8 @@ python makeARDpercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldM
 
 #### runClassifierPercentiles.py
 
+RUN:
+
 runClassifierPercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
 -t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30 -n
 
@@ -196,6 +198,8 @@ runClassifierPercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMo
 
 
 #### runClassifierPercentilesInSeason.py
+
+RUN:
 
 runClassifierPercentilesInSeason.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/train1400 \
 -t /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1400 -l 30 -n
@@ -213,6 +217,8 @@ Lastly, we can print comparative figures of forecasts from JRC, Satotilasto and 
 
 #### forecasting.py
 
+RUN:
+
 python forecasting.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1320 -y 2018 -n -r -f
 
 To use meteorological features:
@@ -223,4 +229,8 @@ python forecasting.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/
 
 To see model performance, we can draw RMSE plot with:
 
-combineResults.py
+#### combineResults.py
+
+RUN:
+
+python combineResults.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1320 
