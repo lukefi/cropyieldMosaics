@@ -39,28 +39,19 @@ python makeS2IndexHisto.py -s /appl/data/geo/sentinel/s2/ \
 
 """
 import argparse
-import os
-import pathlib
-import pickle
-import textwrap
-import pandas as pd
-
 import glob
+import matplotlib.pyplot as plt
+import numpy as np
 import os.path
+import os
 import pandas as pd
-import pickle
-
+import pathlib
 from pathlib import Path
-
-import argparse
-import textwrap
-
+import pickle
 import rasterio as rio
 from rasterstats import zonal_stats
-import numpy as np
-
-import matplotlib.pyplot as plt
 import seaborn as sns
+import textwrap
 
 
 
