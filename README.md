@@ -239,7 +239,7 @@ python combineResults.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosai
 
 This work was supported by the European Union (grant 831735 — 2018-FI-CROPYIELD).
 
-![Funded by Eurostat](img/Eurostat_logo_RGB_200-small.png)
+![Funded by Eurostat](Eurostat_logo_RGB_200-small.png)
 
 
 
