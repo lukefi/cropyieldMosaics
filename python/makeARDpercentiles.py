@@ -35,19 +35,15 @@ python makeARDpercentiles.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldM
 
 """
 import argparse
+import glob
+import numpy as np
 import os
+import os.path
+import pandas as pd
 import pathlib
+from pathlib import Path
 import pickle
 import textwrap
-import pandas as pd
-
-import glob
-import os.path
-import pickle
-
-from pathlib import Path
-
-import numpy as np
 
 # PARAMETERS:
 
