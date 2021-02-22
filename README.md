@@ -234,3 +234,12 @@ To see model performance, we can draw RMSE plot with:
 RUN:
 
 python combineResults.py -i /Users/myliheik/Documents/myCROPYIELD/cropyieldMosaics/results/test1320 
+
+## Funding acknowledgements
+
+This work was supported by the European Union (grant 831735 — 2018-FI-CROPYIELD).
+
+![Funded by Eurostat](img/Eurostat_logo_RGB_200-small.png)
+
+
+
